@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Services - {{ company.name }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/scheduleAndService.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="cm-container">
+    <h1 class="cm-title">Gestion des Services - {{ company.name }}</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <h2 class="cm-subtitle">Services actuels</h2>
+    {% if company.services is not empty %}
+        <div class="row">
+            {% for service in company.services %}
+                <div class="col-md-4 mb-3">
+                    <div class="cm-card">
+                        <div class="cm-card-body">
+                            <h5 class="cm-card-title">{{ service.name }}</h5>
+                            <p class="cm-card-text">{{ service.description }}</p>
+                            <p class="cm-card-text"><strong>Prix :</strong> {{ service.price }} €</p>
+                            <a href="{{ path('service_edit', {'id': service.id}) }}" class="cm-btn cm-btn-primary">Modifier</a>
+                            <form action="{{ path('service_delete', {'id': service.id}) }}" method="post" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}">
+                                <button type="submit" class="cm-btn cm-btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucun service n'est actuellement proposé.</p>
+    {% endif %}
+
+    <h2 class="cm-subtitle">Ajouter un nouveau service</h2>
+    {{ form_start(form, {'attr': {'class': 'cm-form'}}) }}
+    <div class="row">
+        <div class="col-md-4 cm-form-group">
+            {{ form_row(form.name, {'attr': {'class': 'cm-form-control'}}) }}
+        </div>
+        <div class="col-md-4 cm-form-group">
+            {{ form_row(form.price, {'attr': {'class': 'cm-form-control'}}) }}
+        </div>
+    </div>
+    <div class="cm-form-group">
+        {{ form_row(form.description, {'attr': {'class': 'cm-form-control'}}) }}
+    </div>
+    <button type="submit" class="cm-btn cm-btn-success">Ajouter le service</button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

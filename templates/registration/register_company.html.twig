@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription Entreprise{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="registerCompany">
+<div class="register-container">
+    <div class="register-card">
+        <h1 class="register-title">Inscription Entreprise</h1>
+
+        {% for flash_error in app.flashes('verify_email_error') %}
+            <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+        {% endfor %}
+
+        {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
+        <div class="global-group">
+        <div class="part1">
+            <div class="form-group">
+                {{ form_label(registrationForm.lastName, 'Nom') }}
+                {{ form_widget(registrationForm.lastName, {'attr': {'placeholder': 'Votre nom'}}) }}
+                {{ form_errors(registrationForm.lastName) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.email, 'Adresse e-mail') }}
+                {{ form_widget(registrationForm.email, {'attr': {'placeholder': 'Votre adresse e-mail'}}) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
+                {{ form_widget(registrationForm.plainPassword, {'attr': {'placeholder': 'Choisissez un mot de passe sécurisé'}}) }}
+                {{ form_errors(registrationForm.plainPassword) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.name, 'Nom de l\'entreprise') }}
+                {{ form_widget(registrationForm.name, {'attr': {'placeholder': 'Nom de votre entreprise'}}) }}
+                {{ form_errors(registrationForm.name) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.address, 'Adresse') }}
+                {{ form_widget(registrationForm.address, {'attr': {'placeholder': 'Adresse de l\'entreprise'}}) }}
+                {{ form_errors(registrationForm.address) }}
+            </div>
+            </div>
+
+            <div class="part2">
+            
+            <div class="form-group">
+                {{ form_label(registrationForm.firstName, 'Prénom') }}
+                {{ form_widget(registrationForm.firstName, {'attr': {'placeholder': 'Votre prénom'}}) }}
+                {{ form_errors(registrationForm.firstName) }}
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group form-group-half">
+                    {{ form_label(registrationForm.city, 'Ville') }}
+                    {{ form_widget(registrationForm.city, {'attr': {'placeholder': 'Ville'}}) }}
+                    {{ form_errors(registrationForm.city) }}
+                </div>
+
+                <div class="form-group form-group-half">
+                    {{ form_label(registrationForm.postalCode, 'Code postal') }}
+                    {{ form_widget(registrationForm.postalCode, {'attr': {'placeholder': 'Code postal'}}) }}
+                    {{ form_errors(registrationForm.postalCode) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.phoneNumber, 'Numéro de téléphone') }}
+                {{ form_widget(registrationForm.phoneNumber, {'attr': {'placeholder': 'Numéro de téléphone'}}) }}
+                {{ form_errors(registrationForm.phoneNumber) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.description, 'Description') }}
+                {{ form_widget(registrationForm.description, {'attr': {'placeholder': 'Décrivez brièvement votre entreprise'}}) }}
+                {{ form_errors(registrationForm.description) }}
+            </div>
+
+            <div class="form-group checkbox-group">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms, 'J\'accepte les conditions d\'utilisation') }}
+                {{ form_errors(registrationForm.agreeTerms) }}
+            </div>
+
+            <button type="submit" class="btn-submit">S'inscrire</button>
+            </div>
+            </div>
+        {{ form_end(registrationForm) }}
+    </div>
+</div>
+</div>
+{% endblock %}

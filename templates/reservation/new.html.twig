@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle réservation - {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ asset('css/new.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="global">
+<div class="res-container">
+    <h1 class="res-title">Nouvelle réservation chez {{ company.name }}</h1>
+
+{{ form_start(form, {'attr': {'class': 'res-form needs-validation', 'novalidate': 'novalidate'}, 'method': 'POST'}) }}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{{ form_errors(form) }}
+        <div class="res-form-group">
+            {{ form_label(form.service, null, {'label_attr': {'class': 'res-form-label'}}) }}
+            {{ form_widget(form.service, {'attr': {'class': 'res-form-control'}}) }}
+            {{ form_errors(form.service) }}
+        </div>
+
+        <div class="res-form-group">
+            {{ form_label(form.terrain, null, {'label_attr': {'class': 'res-form-label'}}) }}
+            {{ form_widget(form.terrain, {'attr': {'class': 'res-form-control'}}) }}
+            {{ form_errors(form.terrain) }}
+        </div>
+
+        <div class="res-form-group">
+            {{ form_label(form.date, null, {'label_attr': {'class': 'res-form-label'}}) }}
+            {{ form_widget(form.date, {'attr': {'class': 'res-form-control res-datepicker'}}) }}
+            {{ form_errors(form.date) }}
+        </div>
+
+        <div class="res-form-group">
+            {{ form_label(form.time, null, {'label_attr': {'class': 'res-form-label'}}) }}
+            {{ form_widget(form.time, {'attr': {'class': 'res-form-control'}}) }}
+            {{ form_errors(form.time) }}
+        </div>
+
+        <button type="submit" class="res-btn res-btn-primary">Réserver</button>
+    {{ form_end(form) }}
+
+    <div class="res-opening-hours">
+        <h2 class="res-subtitle">Horaires d'ouverture</h2>
+        <ul class="res-hours-list">
+        {% for schedule in company.schedules %}
+            <li><strong>{{ schedule.dayOfWeek|capitalize }}</strong>: {{ schedule.openingTime|date('H:i') }} - {{ schedule.closingTime|date('H:i') }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openingHours = {{ openingHours|raw }};
+
+            flatpickr("#reservation_date", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: "fr",
+                enable: [
+                    function(date) {
+                        const dayOfWeek = date.toLocaleDateString('en-US', {weekday: 'long'}).toLowerCase();
+                        return openingHours.some(schedule => schedule.day === dayOfWeek);
+                    }
+                ],
+                onChange: function(selectedDates, dateStr, instance) {
+                    updateTimePickerHours(dateStr);
+                }
+            });
+
+            function updateTimePickerHours(selectedDate) {
+                const dayOfWeek = new Date(selectedDate).toLocaleDateString('en-US', {weekday: 'long'}).toLowerCase();
+                const schedule = openingHours.find(s => s.day === dayOfWeek);
+                
+                if (schedule) {
+                    const timeSelect = document.querySelector('#reservation_time');
+                    timeSelect.innerHTML = '<option value="">Choisissez une heure</option>';
+
+                    const timeChoices = generateTimeChoices(schedule.open, schedule.close);
+                    
+                    timeChoices.forEach(time => {
+                        const option = document.createElement('option');
+                        option.value = time;
+                        option.textContent = time;
+                        timeSelect.appendChild(option);
+                    });
+
+                    timeSelect.disabled = false;
+                } else {
+                    console.error('No schedule found for the selected day');
+                }
+            }
+
+            function generateTimeChoices(openTime, closeTime) {
+                const timeChoices = [];
+                const [openHour, openMinute] = openTime.split(':').map(Number);
+                const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+
+                let current = new Date(2000, 0, 1, openHour, openMinute);
+                const end = new Date(2000, 0, 1, closeHour, closeMinute);
+
+                while (current <= end) {
+                    timeChoices.push(current.toTimeString().slice(0, 5));
+                    current.setMinutes(current.getMinutes() + 30);
+                }
+
+                return timeChoices;
+            }
+
+            const initialDate = document.querySelector('#reservation_date').value;
+            if (initialDate) {
+                updateTimePickerHours(initialDate);
+            } else {
+                document.querySelector('#reservation_time').disabled = true;
+            }
+        });
+    </script>
+{% endblock %}

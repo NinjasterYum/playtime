@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choisir le type d'inscription{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/choiceAccount.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="registration-choice">
+        <h1>Choisissez votre type de compte</h1>
+        <div class="choice-options">
+            <a href="{{ path('app_register_user') }}" class="choice-card">
+                <i class="fas fa-user-alt"></i>
+                <h2>Joueur</h2>
+                <p>Inscrivez-vous pour réserver des terrains et participer à des événements sportifs.</p>
+            </a>
+            <a href="{{ path('app_register_company') }}" class="choice-card">
+                <i class="fas fa-building"></i>
+                <h2>Entreprise</h2>
+                <p>Inscrivez votre entreprise pour proposer vos installations sportives à la location.</p>
+            </a>
+        </div>
+        <div class="login-link">
+            <p>Déjà inscrit ? <a href="{{ path('app_login') }}">Connectez-vous ici</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

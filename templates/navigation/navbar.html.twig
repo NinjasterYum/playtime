@@ -1,0 +1,56 @@
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/nav.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar" id="navbar">
+    <a href="/" class="logo"><img src="{{ asset('images/PLAYTIME-NOIR.png') }}" alt="PLAYTIME"></a>
+    <button class="navbar-toggle" id="navbar-toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="#">A propos</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+
+        {% if app.user %}
+            {% if app.user.roles[0] == 'ROLE_COMPANY' %}
+                <li><a href="{{ path('company_dashboard') }}" class="nav-btn">Mon Tableau de Bord</a></li>
+            {% endif %}
+            {% if app.user.roles[0] == 'ROLE_USER' %}
+                <li><a href="{{ path('user_dashboard') }}" class="nav-btn">Mon Compte</a></li>
+            {% endif %}
+            <li><a href="{{ path('app_logout') }}" class="nav-btn">Déconnexion</a></li>
+        {% else %}
+            <li><a href="{{ path('app_login') }}" class="nav-btn">Connexion</a></li>
+            <li><a href="{{ path('app_register') }}" class="nav-btn">S'inscrire</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const navLinks = document.getElementById('nav-links');
+
+        navbarToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+            navbarToggle.classList.toggle('active');
+        });
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    });
+</script>
+{% endblock %}

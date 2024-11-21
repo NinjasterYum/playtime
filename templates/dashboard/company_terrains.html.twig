@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Terrains - {{ company.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="terrain-section">
+    <h1 class="terrain-section-title">Gestion des Terrains - {{ company.name }}</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <h2 class="terrain-list-title">Terrains actuels</h2>
+    {% if company.terrains is not empty %}
+        <div class="terrain-list">
+            {% for terrain in company.terrains %}
+                <div class="terrain-card">
+                    <div class="terrain-card-body">
+                        <h5 class="terrain-card-title">{{ terrain.name }}</h5>
+                        <p class="terrain-card-text"><strong>Type:</strong> {{ terrain.type }}</p>
+                        <p class="terrain-card-text"><strong>Emplacement:</strong> {{ terrain.isIndoor ? 'Intérieur' : 'Extérieur' }}</p>
+                        <p class="terrain-card-text">{{ terrain.description }}</p>
+                        <div class="terrain-card-actions">
+                            <a href="{{ path('terrain_edit', {'id': terrain.id}) }}" class="terrain-btn terrain-btn-primary">Modifier</a>
+                            <form action="{{ path('terrain_delete', {'id': terrain.id}) }}" method="post" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ terrain.id) }}">
+                                <button type="submit" class="terrain-btn terrain-btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce terrain ?')">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucun terrain n'est actuellement enregistré.</p>
+    {% endif %}
+
+    <div class="terrain-form">
+        <h2 class="terrain-form-title">Ajouter un nouveau terrain</h2>
+        {{ form_start(form, {'attr': {'class': 'terrain-form'}}) }}
+        <div class="row">
+            <div class="col-md-4 terrain-form-group">
+                {{ form_label(form.name, null, {'label_attr': {'class': 'terrain-form-label'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'terrain-form-control'}}) }}
+            </div>
+            <div class="col-md-4 terrain-form-group">
+                {{ form_label(form.type, null, {'label_attr': {'class': 'terrain-form-label'}}) }}
+                {{ form_widget(form.type, {'attr': {'class': 'terrain-form-control'}}) }}
+            </div>
+            <div class="col-md-4 terrain-form-group">
+                {{ form_label(form.isIndoor, null, {'label_attr': {'class': 'terrain-form-label'}}) }}
+                {{ form_widget(form.isIndoor, {'attr': {'class': 'terrain-form-control'}}) }}
+            </div>
+        </div>
+        <div class="terrain-form-group">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'terrain-form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'terrain-form-control'}}) }}
+        </div>
+        <button type="submit" class="terrain-form-submit">Ajouter le terrain</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

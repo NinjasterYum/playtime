@@ -1,0 +1,124 @@
+/* Général */
+/* Reset et styles de base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  background-color: #f0f2f5;
+  font-family: "Arial", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Conteneur du formulaire */
+form {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Titre */
+h1 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  color: #333;
+}
+
+/* Champ de formulaire */
+.form-control {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+/* Focus sur le champ */
+.form-control:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Checkbox */
+.checkbox label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Bouton de soumission */
+.btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* Alertes */
+.alert {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Lien */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile */
+@media (max-width: 400px) {
+  form {
+    padding: 20px;
+    margin: 0 15px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    font-size: 0.9rem;
+  }
+}
+
+/* login.css */
+
+.rememberme {
+  margin-bottom: 20px;
+}

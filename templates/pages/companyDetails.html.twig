@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ company.name }} - Détails{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/company_details.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="company-details-container">
+    <header class="company-header">
+        <h1>{{ company.name }}</h1>
+        <p class="company-tagline">{{ company.description }}</p>
+    </header>
+
+    <section class="company-info">
+        <div class="info-card">
+            <h2>Informations</h2>
+            <p><i class="fas fa-map-marker-alt"></i> {{ company.address }}</p>
+            <p><i class="fas fa-phone"></i> {{ company.phoneNumber }}</p>
+            <p><i class="fas fa-envelope"></i> {{ company.email }}</p>
+        </div>
+    </section>
+
+    <section class="company-services">
+        <h2>Nos Services</h2>
+        <div class="services-grid">
+            {% for service in company.services %}
+                <div class="service-card">
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.description }}</p>
+                    <p class="service-price">{{ service.price }} €</p>
+                </div>
+            {% else %}
+                <p>Aucun service n'est actuellement proposé.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="company-schedule">
+        <h2>Horaires d'ouverture</h2>
+        <div class="schedule-grid">
+            {% for schedule in company.schedules %}
+                <div class="schedule-item">
+                    <span class="day">{{ schedule.dayOfWeek }}</span>
+                    <span class="hours">{{ schedule.openingTime|date('H:i') }} - {{ schedule.closingTime|date('H:i') }}</span>
+                </div>
+            {% else %}
+                <p>Aucun horaire n'est actuellement défini.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="company-reviews">
+        <h2>Avis des clients</h2>
+        <!-- Ici, vous pouvez ajouter un système d'avis si vous en avez un -->
+        <p>Les avis des clients seront bientôt disponibles.</p>
+    </section>
+    {% if is_granted('ROLE_USER') %}
+    <div class="cta-container">
+        <a href="{{ path('make_reservation', {'id': company.id}) }}" class="btn btn-primary">Faire une réservation</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

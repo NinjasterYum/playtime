@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des horaires - {{ company.name }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/scheduleAndService.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="cm-container">
+    <h1 class="cm-title">Gestion des horaires - {{ company.name }}</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <h2 class="cm-subtitle">Horaires actuels</h2>
+    <table class="cm-table">
+        <thead>
+            <tr>
+                <th>Jour</th>
+                <th>Heure d'ouverture</th>
+                <th>Heure de fermeture</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for schedule in company.schedules %}
+            <tr>
+                <td>{{ schedule.dayOfWeek }}</td>
+                <td>{{ schedule.openingTime|date('H:i') }}</td>
+                <td>{{ schedule.closingTime|date('H:i') }}</td>
+                <td>
+                    <a href="{{ path('schedule_edit', {'id': schedule.id}) }}" class="cm-btn cm-btn-primary">Modifier</a>
+                    <form action="{{ path('schedule_delete', {'id': schedule.id}) }}" method="post" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ schedule.id) }}">
+                        <button type="submit" class="cm-btn cm-btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet horaire ?')">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Aucun horaire défini</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 class="cm-subtitle">Ajouter un nouvel horaire</h2>
+{{ form_start(form, {'attr': {'class': 'cm-form', 'id': 'schedule-form'}, 'method': 'POST'}) }}
+    <div class="row">
+        <div class="col cm-form-group">
+            {{ form_row(form.dayOfWeek, {'attr': {'class': 'cm-form-control'}}) }}
+        </div>
+        <div class="col cm-form-group">
+            {{ form_row(form.openingTime, {'attr': {'class': 'cm-form-control'}}) }}
+        </div>
+        <div class="col cm-form-group">
+            {{ form_row(form.closingTime, {'attr': {'class': 'cm-form-control'}}) }}
+        </div>
+    </div>
+    <button type="submit" class="cm-btn cm-btn-success">Ajouter l'horaire</button>
+    {{ form_widget(form._token) }}
+    {{ form_end(form) }}
+</div>
+{% endblock %}

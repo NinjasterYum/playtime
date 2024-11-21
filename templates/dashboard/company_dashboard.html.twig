@@ -1,0 +1,269 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block title %}Tableau de bord {{ company.name }}{% endblock %}
+
+{% block body %}
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1>Bienvenue, {{ company.name }}</h1>
+    </header>
+
+    <nav class="dashboard-nav">
+        <ul>
+            <li><a href="#company-info">Informations de l'entreprise</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#terrains">Terrains</a></li>
+            <li><a href="#schedule">Horaires</a></li>
+            <li><a href="#reservations">Réservations</a></li>
+        </ul>
+    </nav>
+
+    <div class="dashboard-content">
+        <section id="company-info" class="dashboard-section company-info">
+            <h2>Informations de l'entreprise</h2>
+            <div class="info-card">
+                <h3>{{ company.name }}</h3>
+                <p><i class="fas fa-map-marker-alt"></i> {{ company.address }}</p>
+                <p><i class="fas fa-phone"></i> {{ company.phoneNumber }}</p>
+                <p><i class="fas fa-envelope"></i> {{ company.email }}</p>
+                <p><i class="fas fa-info-circle"></i> {{ company.description }}</p>
+                <a href="{{ path('company_update') }}" class="btn btn-primary infoCompany">Modifier les informations</a>
+            </div>
+        </section>
+
+        <section id="services" class="dashboard-section services">
+            <h2>Vos Services</h2>
+            {% if company.services is not empty %}
+                <div class="services-list">
+                    {% for service in company.services %}
+                        <div class="service-card">
+                            <h3>{{ service.name }}</h3>
+                            <p>{{ service.description }}</p>
+                            <p><strong>Prix:</strong> {{ service.price }} €</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Vous n'avez pas encore ajouté de services.</p>
+            {% endif %}
+            <a href="{{ path('company_services') }}" class="btn btn-primary">Gérer les services</a>
+        </section>
+
+        <section id="terrains" class="dashboard-section terrains">
+            <h2>Vos Terrains</h2>
+            {% if company.terrains is not empty %}
+                <div class="terrains-list">
+                    {% for terrain in company.terrains %}
+                        <div class="terrain-card">
+                            <h3>{{ terrain.name }}</h3>
+                            <p><strong>Type:</strong> {{ terrain.type }}</p>
+                            <p><strong>Emplacement:</strong> {{ terrain.isIndoor ? 'Intérieur' : 'Extérieur' }}</p>
+                            <p>{{ terrain.description }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Vous n'avez pas encore ajouté de terrains.</p>
+            {% endif %}
+            <a href="{{ path('company_terrains') }}" class="btn btn-primary">Gérer les terrains</a>
+        </section>
+
+        <section id="schedule" class="dashboard-section schedule">
+            <h2>Horaires d'ouverture</h2>
+            {% if company.schedules is not empty %}
+                <ul class="opening-hours">
+                    {% for schedule in company.schedules %}
+                        <tr>
+                            <td>{{ schedule.dayOfWeek }}</td>
+                            <td>{{ schedule.openingTime|date('H:i') }}</td>
+                            <td>{{ schedule.closingTime|date('H:i') }}</td>
+                        </tr>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Vous n'avez pas encore défini vos horaires d'ouverture.</p>
+            {% endif %}
+            <a href="{{ path('company_schedule') }}" class="btn btn-primary hoursCompany">Gérer les horaires</a>
+        </section>
+
+        <section id="reservations" class="dashboard-section reservations">
+            <h2>Vos Réservations</h2>
+            <select id="terrain-filter">
+                <option value="">Tous les terrains</option>
+                {% for terrain in company.terrains %}
+                    <option value="{{ terrain.id }}">{{ terrain.name }}</option>
+                {% endfor %}
+            </select>
+            <div id="calendar"></div>
+            
+            <button id="show-manual-reservation-form" class="btn btn-primary">Ajouter une réservation manuelle</button>
+            
+            <div id="manual-reservation-form" style="display: none;">
+                <h3>Nouvelle Réservation Manuelle</h3>
+                {{ form_start(manualReservationForm, {'action': path('company_new_reservation')}) }}
+                {{ form_row(manualReservationForm.service) }}
+                {{ form_row(manualReservationForm.terrain) }}
+                {{ form_row(manualReservationForm.dateTime, {'attr': {'class': 'flatpickr'}}) }}
+                {{ form_row(manualReservationForm.clientFirstName) }}
+                {{ form_row(manualReservationForm.clientLastName) }}
+                {{ form_row(manualReservationForm.clientEmail) }}
+                {{ form_row(manualReservationForm.clientPhone) }}
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+                <button type="button" id="cancel-manual-reservation" class="btn btn-secondary">Annuler</button>
+                {{ form_end(manualReservationForm) }}
+            </div>
+        </section>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/locales/fr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var terrainFilter = document.getElementById('terrain-filter');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour'
+        },
+        events: {
+            url: "{{ path('company_reservations_calendar') }}",
+            method: 'GET',
+            failure: function() {
+                alert('Erreur lors du chargement des réservations.');
+            }
+        },
+eventContent: function(arg) {
+                let statusColor;
+                switch(arg.event.extendedProps.status) {
+                    case 'validated':
+                        statusColor = 'green';
+                        break;
+                    case 'pending':
+                        statusColor = 'orange';
+                        break;
+                    default:
+                        statusColor = 'red';
+                }
+                
+                let dotEl = document.createElement('div');
+                dotEl.className = 'fc-daygrid-event-dot';
+                dotEl.style.borderColor = statusColor;
+
+                let titleEl = document.createElement('div');
+                titleEl.innerHTML = arg.event.title;
+
+                let arrayOfDomNodes = [ dotEl, titleEl ];
+                return { domNodes: arrayOfDomNodes };
+            },
+        eventSourceSuccess: function(content, xhr) {
+            console.log('Événements chargés :', content);
+            return content;
+        },
+        eventDidMount: function(info) {
+            console.log('Événement monté :', info.event.title, info.event.extendedProps);
+        },
+        selectable: true,
+        select: function(info) {
+            document.getElementById('manual-reservation-form').style.display = 'block';
+            document.getElementById('show-manual-reservation-form').style.display = 'none';
+            flatpickr("#manual_reservation_dateTime", {
+                defaultDate: info.startStr,
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+        },
+        eventClick: function(info) {
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        }
+    });
+
+    calendar.render();
+
+    function applyTerrainFilter() {
+        var selectedTerrain = terrainFilter.value;
+        console.log('Terrain sélectionné:', selectedTerrain);
+        
+        calendar.getEvents().forEach(function(event) {
+            var eventTerrainId = event.extendedProps.terrainId || null;
+            if (selectedTerrain === '' || (eventTerrainId !== null && eventTerrainId.toString() === selectedTerrain)) {
+                event.setProp('display', 'auto');
+            } else {
+                event.setProp('display', 'none');
+            }
+        });
+    }
+
+    if (terrainFilter) {
+        terrainFilter.addEventListener('change', function() {
+            applyTerrainFilter();
+        });
+    }
+
+    calendar.on('eventSourceSuccess', function() {
+        applyTerrainFilter();
+    });
+
+    flatpickr(".flatpickr", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        locale: "fr"
+    });
+
+    document.getElementById('show-manual-reservation-form').addEventListener('click', function() {
+        document.getElementById('manual-reservation-form').style.display = 'block';
+        this.style.display = 'none';
+    });
+
+    document.getElementById('cancel-manual-reservation').addEventListener('click', function() {
+        document.getElementById('manual-reservation-form').style.display = 'none';
+        document.getElementById('show-manual-reservation-form').style.display = 'block';
+    });
+
+    document.querySelector('#manual-reservation-form form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                calendar.addEvent(data);
+                document.getElementById('manual-reservation-form').style.display = 'none';
+                document.getElementById('show-manual-reservation-form').style.display = 'block';
+                this.reset();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

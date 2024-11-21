@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Playtime{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+<header class="hero">
+    <div class="hero-content">
+        <h1>Votre match, maintenant !</h1>
+        <div class="search-container">
+            <form id="search-form" class="search-form" onsubmit="redirectToReservation(event)">
+                <select id="venue-select" name="venue" class="search-input" required>
+                    <option value="">Choisissez un lieu</option>
+                    {% for company in sportCompanies %}
+                        <option value="{{ company.id }}">{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="search-button">Rechercher</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="content">
+<section class="venues">
+    <h2 class="section-title">Nos terrains</h2>
+    <div class="venue-list">
+        {% for company in sportCompanies %}
+            <div class="venue-card">
+    <div class="venue-image">
+    {% if company.images is not empty %}
+        {% set firstImage = company.images|first %}
+        <img src="{{ vich_uploader_asset(firstImage, 'imageFile') }}" alt="{{ company.name }}">
+    {% else %}
+        <img src="{{ asset('images/header.jpg') }}" alt="{{ company.name }}" class="placeholder-image">
+    {% endif %}
+    </div>
+    <div class="venue-info">
+        <h3 class="venue-name">{{ company.name }}</h3>
+        <div class="venue-features">
+            <div class="venue-feature">
+                <i class="fas fa-futbol"></i>
+                <span>{{ company.terrains|length }} Terrain{% if company.terrains|length > 1 %}s{% endif %}</span>
+            </div>
+            <div class="venue-feature">
+                <i class="fas fa-warehouse"></i>
+                <span> {{ company.terrains|filter(t => t.isIndoor)|length }} Indoor</span>
+            </div>
+            <div class="venue-feature">
+                <i class="fas fa-sun"></i>
+                <span> {{ company.terrains|filter(t => not t.isIndoor)|length }} Outdoor</span>
+            </div>
+        </div>
+        <div class="venue-address">
+            <i class="fas fa-map-marker-alt"></i>
+            <span> {{ company.address }} à {{ company.city }} ({{ company.postalCode }})</span>
+        </div>
+        <div class="venue-actions">
+            <span class="venue-price">A partir de {{ company.services[0].price ?? 'N/A' }}€</span>
+            <div class="action-buttons">
+                <a href="{{ path('company_details', {'id': company.id}) }}" class="btn-details">Voir Details</a>
+                <a href="{{ path('make_reservation', {'id': company.id}) }}" class="btn-book">Réserver</a>
+            </div>
+        </div>
+    </div>
+</div>
+        {% else %}
+            <p class="no-venues">Aucun terrain n'est encore enregistré.</p>
+        {% endfor %}
+    </div>
+</section>
+    <section class="map-section">
+        <h2 class="section-title">Carte des terrains</h2>
+        <div class="map-container">
+            <div class="map-actions">
+                <button id="geolocate-btn" class="btn-geolocate localisation-btn">Me géolocaliser</button>
+                <input type="text" id="search-input" class="search-input-map" placeholder="Rechercher un lieu"><i class="fa-solid fa-magnifying-glass search-map-btn"></i>
+            </div>
+            <div id="map" style="height: 400px;"></div>
+        </div>
+</main>
+
+<section class="cta">
+    <div class="cta-content">
+        <h2>Vous êtes propriétaire d'un terrain ?</h2>
+        <p>Rejoignez notre plateforme et augmentez vos réservations !</p>
+        <a href="{{ path('app_register_company') }}" class="btn-cta">S'inscrire maintenant</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+    function redirectToReservation(event) {
+        event.preventDefault();
+        const venueSelect = document.getElementById('venue-select');
+        const companyId = venueSelect.value;
+        if (companyId) {
+            window.location.href = "{{ path('make_reservation', {'id': 'PLACEHOLDER'}) }}".replace('PLACEHOLDER', companyId);
+        }
+    }
+</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var map = L.map('map').setView([46.603354, 1.888334], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var companies = {{ companiesForMap|raw }};
+
+            companies.forEach(function(company) {
+                if (company.latitude && company.longitude) {
+                    L.marker([company.latitude, company.longitude])
+                        .addTo(map)
+                        .bindPopup(company.name + '<br>' + company.address);
+                }
+            });
+
+            document.getElementById('geolocate-btn').addEventListener('click', function() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var lat = position.coords.latitude;
+                        var lon = position.coords.longitude;
+                        map.setView([lat, lon], 13);
+                        L.marker([lat, lon]).addTo(map)
+                            .bindPopup('Vous êtes ici')
+                            .openPopup();
+                    });
+                } else {
+                    alert("La géolocalisation n'est pas supportée par votre navigateur");
+                }
+            });
+        });
+    </script>
+{% endblock %}

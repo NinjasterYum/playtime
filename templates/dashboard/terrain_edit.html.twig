@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le terrain{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Modifier le terrain</h1>
+
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-4">
+            {{ form_row(form.name) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.type) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.isIndoor) }}
+        </div>
+    </div>
+    {{ form_row(form.description) }}
+    <button type="submit" class="btn btn-primary">Mettre à jour le terrain</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('company_terrains') }}" class="btn btn-secondary mt-3">Retour à la liste des terrains</a>
+</div>
+{% endblock %}

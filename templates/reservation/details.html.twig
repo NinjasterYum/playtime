@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la réservation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/reservation_details.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="reservation-details-container">
+    <h1>Détails de la réservation</h1>
+
+    <div class="reservation-card">
+        <h2>Réservation #{{ reservation.id }}</h2>
+        
+        <div class="detail-row">
+            <span class="detail-label">Service :</span>
+            <span class="detail-value">{{ reservation.service.name }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Date :</span>
+            <span class="detail-value">{{ reservation.date|date('Y-m-d') }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Heure :</span>
+            <span class="detail-value">{{ reservation.time|date('H:i') }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Statut :</span>
+            <span class="detail-value status-{{ reservation.status|lower }}">{{ reservation.status }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Entreprise :</span>
+            <span class="detail-value">{{ reservation.sportCompany.name }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Adresse :</span>
+            <span class="detail-value">{{ reservation.sportCompany.address }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Prix :</span>
+            <span class="detail-value">{{ reservation.service.price }} €</span>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        {% if reservation.status == 'En attente' %}
+            <a href="{{ path('reservation_cancel', {'id': reservation.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">Annuler la réservation</a>
+        {% endif %}
+        <a href="{{ path('user_dashboard') }}" class="btn btn-secondary">Retour au tableau de bord</a>
+    </div>
+</div>
+{% endblock %}

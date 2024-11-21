@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - {{ user.firstName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/account.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-container">
+    <h1>Bienvenue, {{ user.firstName }} {{ user.lastName }}</h1>
+
+    <div class="dashboard-section user-info">
+        <h2>Vos informations</h2>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Téléphone:</strong> {{ user.phoneNumber }}</p>
+        <p><strong>Adresse:</strong> {{ user.address }}</p>
+        <a href="{{ path('user_edit_profile') }}" class="btn btn-primary">Modifier mon profil</a>
+    </div>
+
+    <div class="dashboard-section reservations">
+        <h2>Vos réservations</h2>
+        {% if reservations is empty %}
+            <p>Vous n'avez pas encore de réservations.</p>
+        {% else %}
+            <div class="reservations-list">
+                {% for reservation in reservations %}
+                    <div class="reservation-card">
+                        <h3>{{ reservation.service.name }}</h3>
+                        <p><strong>Date:</strong> {{ reservation.date|date('d-m-Y') }} {{ reservation.time|date('H:i') }}</p>
+                        <p><strong>Entreprise:</strong> {{ reservation.sportCompany.name }}</p>
+                        <p><strong>Statut:</strong> {{ reservation.status }}</p>
+                        <a href="{{ path('reservation_details', {'id': reservation.id}) }}" class="btn btn-secondary">Détails</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

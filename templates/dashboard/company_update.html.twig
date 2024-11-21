@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mettre à jour les informations de l'établissement{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <link rel="stylesheet" href="{{ asset('css/company_update.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="company-update-container">
+        <div class="form-header">
+            <h1>Mettre à jour les informations de l'établissement</h1>
+            <p class="form-subtitle">Modifiez les informations de votre établissement ci-dessous</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'company-update-form'}}) }}
+            <div class="form-sections">
+                <div class="form-section">
+                    <h2>Informations personnelles</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form_label(form.firstName) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.lastName) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Informations de l'établissement</h2>
+                    <div class="form-group">
+                        {{ form_label(form.name) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Adresse</h2>
+                    <div class="form-group">
+                        {{ form_label(form.address) }}
+                        {{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.address) }}
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form_label(form.city) }}
+                            {{ form_widget(form.city, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.city) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.postalCode) }}
+                            {{ form_widget(form.postalCode, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.postalCode) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Contact</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form_label(form.phoneNumber) }}
+                            {{ form_widget(form.phoneNumber, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.phoneNumber) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.email) }}
+                            {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.email) }}
+                        </div>
+                    </div>
+                </div>
+
+<div class="form-section">
+    <h2>Images de l'établissement</h2>
+    <div class="image-upload-container">
+        {# Affichage des images existantes #}
+        {% if form.images|length > 0 %}
+            <div class="existing-images">
+                {% for imageField in form.images %}
+                    {% if imageField.vars.data and imageField.vars.data.filename %}
+                        <div class="existing-image-container">
+                            <img src="{{ vich_uploader_asset(imageField.vars.data, 'imageFile') }}" 
+                                 alt="Image de l'établissement">
+                            <div class="image-overlay">
+                                {# Cache les widgets VichUploader tout en les gardant fonctionnels #}
+                                <div class="hidden-fields">
+                                    {{ form_widget(imageField.imageFile) }}
+                                </div>
+                                <button type="button" 
+                                        class="remove-image" 
+                                        data-image-id="{{ imageField.vars.data.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Zone de dépôt pour nouvelles images #}
+        <div class="dropzone-wrapper">
+            <div class="dropzone-area" 
+                 data-controller="dropzone"
+                 data-dropzone-url="/upload-company-image">
+                <div class="dz-message">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Glissez vos images ici ou cliquez pour sélectionner</p>
+                    <span class="note">(5 Mo maximum par image)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                <div class="form-section">
+                    <h2>Sécurité</h2>
+                            <p class="form-note">Par mesure de sécurité, veuillez taper votre mot de passe</p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form_label(form.password) }}
+                            {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.password) }}
+                        </div>
+                    </div>
+                </div>
+
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer les modifications
+                </button>
+                <a href="{{ path('company_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageContainers = document.querySelectorAll('.existing-image-container');
+    
+    imageContainers.forEach(container => {
+        const deleteBtn = container.querySelector('.remove-image');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                    const imageId = this.getAttribute('data-image-id');
+                    
+                    try {
+                        const response = await fetch(`/delete-company-image/${imageId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Supprimer le conteneur d'image
+                            container.remove();
+                            
+                            // Afficher un message de succès
+                            const alert = document.createElement('div');
+                            alert.className = 'alert alert-success';
+                            alert.textContent = 'Image supprimée avec succès';
+                            alert.style.position = 'fixed';
+                            alert.style.top = '20px';
+                            alert.style.right = '20px';
+                            alert.style.padding = '1rem';
+                            alert.style.borderRadius = '4px';
+                            alert.style.backgroundColor = '#28a745';
+                            alert.style.color = 'white';
+                            alert.style.zIndex = '1000';
+                            
+                            document.body.appendChild(alert);
+                            setTimeout(() => alert.remove(), 3000);
+                        } else {
+                            throw new Error(data.error || 'Erreur lors de la suppression');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Erreur lors de la suppression de l\'image');
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
