@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation;
+use App\Entity\Service;
 use App\Entity\StandardUser;
 use App\Entity\SportCompany;
+use App\Entity\Terrain;
 use App\Form\StandardUserRegistrationFormType;
 use App\Form\SportCompanyRegistrationFormType;
 use App\Security\EmailVerifier;
@@ -13,6 +16,7 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,13 +38,12 @@ class RegistrationController extends AbstractController
         return $this->render('registration/choose_type.html.twig');
     }
 
-    #[Route('/register/user', name: 'app_register_user')]
-    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    #[Route('/register/user', name: 'app_register_user', methods: ['GET','POST'])]
+    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $user = new StandardUser();
         $form = $this->createForm(StandardUserRegistrationFormType::class, $user);
         $form->handleRequest($request);
-
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user->setRoles(['ROLE_USER']);
@@ -53,6 +56,28 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
+
+            if ($session->has('reservation_data')) {
+                $reservationData = $session->get('reservation_data');
+
+                $sportCompany = $entityManager->getRepository(SportCompany::class)->find($reservationData['sport_company_id']);
+                $service = $entityManager->getRepository(Service::class)->find($reservationData['reservation']['service']);
+                $terrain = $entityManager->getRepository(Terrain::class)->find($reservationData['reservation']['terrain']);
+
+                $reservation = new Reservation();
+                $reservation->setStandardUser($user);
+                $reservation->setSportCompany($sportCompany);
+                $reservation->setService($service);
+                $reservation->setTerrain($terrain);
+                $reservation->setDate(new \DateTime($reservationData['reservation']['date']));
+                $reservation->setTime(new \DateTime($reservationData['reservation']['time']));
+
+                $entityManager->persist($user);
+                $entityManager->persist($reservation);
+                $entityManager->flush();
+
+                $session->remove('reservation_data');
+            }
 
             // $this->sendVerificationEmail($user);
 
