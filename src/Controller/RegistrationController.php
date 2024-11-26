@@ -39,7 +39,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/register/user', name: 'app_register_user', methods: ['GET','POST'])]
-    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, SessionInterface $session): Response
+    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
         $user = new StandardUser();
         $form = $this->createForm(StandardUserRegistrationFormType::class, $user);
@@ -56,6 +56,11 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $session = $request->getSession();
+            if (!$session) {
+                throw new \RuntimeException('La session n\'est pas disponible');
+            }
 
             if ($session->has('reservation_data')) {
                 $reservationData = $session->get('reservation_data');

@@ -26,7 +26,7 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/reservation/new/{id}', name: 'make_reservation', methods: ['GET', 'POST'])]
-    public function new(int $id, Request $request, EntityManagerInterface $entityManager, ReservationValidator $validator, SportCompany $company, SessionInterface $session): Response
+    public function new(int $id, Request $request, EntityManagerInterface $entityManager, ReservationValidator $validator, SportCompany $company): Response
     {
         $user = $this->getUser();
 
@@ -47,7 +47,11 @@ class ReservationController extends AbstractController
                 $form->handleRequest($request);
 
                 if ($form->isSubmitted() && $form->isValid()) {
-                    // Store necessary reservation data in the session
+                    $session = $request->getSession();
+                    if (!$session) {
+                        throw new \RuntimeException('La session n\'est pas disponible');
+                    }
+
                     $session->set('reservation_data', [
                         'reservation' => $request->request->all('reservation'), // existing form data
                         'sport_company_id' => $company->getId() // Add SportCompany ID to session
