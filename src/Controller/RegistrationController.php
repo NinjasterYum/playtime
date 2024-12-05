@@ -11,12 +11,12 @@ use App\Form\StandardUserRegistrationFormType;
 use App\Form\SportCompanyRegistrationFormType;
 use App\Security\EmailVerifier;
 use App\Service\GeocodingService;
+use App\Service\ReservationValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -39,7 +39,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/register/user', name: 'app_register_user', methods: ['GET','POST'])]
-    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function registerUser(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, ReservationValidator $validator): Response
     {
         $user = new StandardUser();
         $form = $this->createForm(StandardUserRegistrationFormType::class, $user);
@@ -77,10 +77,18 @@ class RegistrationController extends AbstractController
                 $reservation->setDate(new \DateTime($reservationData['reservation']['date']));
                 $reservation->setTime(new \DateTime($reservationData['reservation']['time']));
 
-                $entityManager->persist($user);
-                $entityManager->persist($reservation);
-                $entityManager->flush();
+                $validationResult = $validator->validate($reservation);
 
+                if ($validationResult->isValid()) {
+                    $entityManager->persist($reservation);
+                    $entityManager->flush();
+
+                    $session->remove('reservation_data');
+                } else {
+                    foreach ($validationResult->getErrors() as $error) {
+                        $this->addFlash('error', $error);
+                    }
+                }
                 $session->remove('reservation_data');
             }
 

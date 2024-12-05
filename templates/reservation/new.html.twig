@@ -69,6 +69,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const openingHours = {{ openingHours|raw }};
+            const reservedTimes = {{ reservedTimes|raw }};
 
             flatpickr("#reservation_date", {
                 dateFormat: "Y-m-d",
@@ -94,11 +95,17 @@
                     timeSelect.innerHTML = '<option value="">Choisissez une heure</option>';
 
                     const timeChoices = generateTimeChoices(schedule.open, schedule.close);
-                    
+                    const reservedForDate = reservedTimes[selectedDate] || [];
+
                     timeChoices.forEach(time => {
                         const option = document.createElement('option');
                         option.value = time;
                         option.textContent = time;
+
+                        if (reservedForDate.includes(time)) {
+                            option.disabled = true;
+                        }
+
                         timeSelect.appendChild(option);
                     });
 
