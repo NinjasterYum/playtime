@@ -5,14 +5,13 @@ setlocale(LC_TIME, 'fr_FR.utf8', 'fra');
 
 use App\Entity\Reservation;
 use App\Entity\SportCompany;
-use App\Entity\Terrain;
 use App\Form\ReservationType;
+use App\Repository\ReservationRepository;
 use App\Service\ReservationValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Psr\Log\LoggerInterface;
@@ -26,7 +25,7 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/reservation/new/{id}', name: 'make_reservation', methods: ['GET', 'POST'])]
-    public function new(int $id, Request $request, EntityManagerInterface $entityManager, ReservationValidator $validator, SportCompany $company): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, ReservationValidator $validator, SportCompany $company, ReservationRepository $reservationRepository): Response
     {
         $user = $this->getUser();
 
@@ -46,21 +45,29 @@ class ReservationController extends AbstractController
                 $form = $this->createForm(ReservationType::class, $reservation, ['company' => $company]);
                 $form->handleRequest($request);
 
+                $validationResult = $validator->validate($reservation);
+
                 if ($form->isSubmitted() && $form->isValid()) {
-                    $session = $request->getSession();
-                    if (!$session) {
-                        throw new \RuntimeException('La session n\'est pas disponible');
+                    if($validationResult->isValid()){
+                        $session = $request->getSession();
+                        if (!$session) {
+                            throw new \RuntimeException('La session n\'est pas disponible');
+                        }
+
+                        $session->set('reservation_data', [
+                            'reservation' => $request->request->all('reservation'),
+                            'sport_company_id' => $company->getId()
+                        ]);
+                        return $this->redirectToRoute('app_register_user');
+                    }else{
+                        foreach ($validationResult->getErrors() as $error) {
+                            $form->addError(new FormError($error));
+                        }
                     }
-
-                    $session->set('reservation_data', [
-                        'reservation' => $request->request->all('reservation'), // existing form data
-                        'sport_company_id' => $company->getId() // Add SportCompany ID to session
-                    ]);
-
-                    return $this->redirectToRoute('app_register_user');
                 }
             }
         }
+
         $openingHours = $this->getOpeningHours($company);
 
         $form = $this->createForm(ReservationType::class, $reservation, [
@@ -84,10 +91,25 @@ class ReservationController extends AbstractController
             }
         }
 
+        $allReservations = $reservationRepository->findBy(['sportCompany' => $company]);
+        $reservedTimes = [];
+
+        foreach ($allReservations as $existingReservation) {
+            $date = $existingReservation->getDate()->format('Y-m-d');
+            $time = $existingReservation->getTime()->format('H:i');
+
+            if (!isset($reservedTimes[$date])) {
+                $reservedTimes[$date] = [];
+            }
+
+            $reservedTimes[$date][] = $time;
+        }
+
         return $this->render('reservation/new.html.twig', [
             'form' => $form->createView(),
             'company' => $company,
             'openingHours' => json_encode($openingHours),
+            'reservedTimes' => json_encode($reservedTimes),
         ]);
     }
 

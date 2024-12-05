@@ -3,15 +3,18 @@
 namespace App\Service;
 
 use App\Entity\Reservation;
+use App\Repository\ReservationRepository;
 use Psr\Log\LoggerInterface;
 
 class ReservationValidator
 {
     private $logger;
+    private $reservationRepository;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, ReservationRepository $reservationRepository)
     {
         $this->logger = $logger;
+        $this->reservationRepository = $reservationRepository;
     }
     public function validate(Reservation $reservation): ValidationResult
     {
@@ -56,6 +59,15 @@ class ReservationValidator
         }
     }
 
+    $existingReservation = $this->reservationRepository->findOneBy([
+        'sportCompany' => $company,
+        'date' => $date,
+        'time' => $time,
+    ]);
+
+    if ($existingReservation) {
+        $result->addError('Ce créneau horaire est déjà réservé.');
+    }
     return $result;
 }
 }
