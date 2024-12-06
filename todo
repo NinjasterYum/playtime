@@ -1,3 +1,11 @@
+Terminé :
+
+- Il faut que la réservation redirige vers l'inscription et que cela valide le tout automatiquement. Actuellement rien ne se passe si on est pas connecté. (7/10) :DONE 19/11-25/11
+
+- on voit pas le numero de terrain sur la reservation (4/10) :DONE 25/11-25/11
+
+- empêcher la réservation sur un créneau déjà pris côté utilisateur :DONE 02/12-05/12
+
 En cours :
 
 - Mettre en place le système photo des entreprises
@@ -5,8 +13,6 @@ En cours :
 - mettre en place la validation des réservation pour user (guestUser est deja en place) OK(?)
 
 TODO :
-
-- Il faut que la réservation redirige vers l'inscription et que cela valide le tout automatiquement. Actuellement rien ne se passe si on est pas connecté. (7/10) :DONE 19/11-25/11
 
 - Avoir un dark theme (4/10)
 
@@ -28,8 +34,6 @@ TODO :
   ---> avoir un calendrier par tranche de 5 terrains + 1 calendrier pour les padels
 
 - acces big admin avec le nb d’inscrit le nb de five qui payent avec les dates de factures etc ? (10/10)
-
-- on voit pas le numero de terrain sur la reservation (4/10) :DONE 25/11-25/11
 
 - on peut faire la demande de reservation d’un terrain qui est deja reserve il faudrait enlever cette possibilité la (5/10)
 
